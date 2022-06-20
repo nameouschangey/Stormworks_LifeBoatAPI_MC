@@ -18,11 +18,11 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field currentState string name of the current state to run
 ---@field ticks number number of ticks that have been spent in the current state
 LifeBoatAPI.LBStateMachine = {
-    ---@param this LBStateMachine
+    ---@param self LBStateMachine
     ---@param defaultStateCallback fun(ticks:number, statemachine:LBStateMachine):string default state function
     ---@return LBStateMachine
-    new = function (this, defaultStateCallback)
-        return LifeBoatAPI.lb_copy(this, {
+    new = function (self, defaultStateCallback)
+        return LifeBoatAPI.lb_copy(self, {
             states = {
                 [0] = defaultStateCallback
             },
@@ -33,14 +33,14 @@ LifeBoatAPI.LBStateMachine = {
 
     ---@section lbstatemachine_onTick
     ---Call during the onTick function for this state machine to function
-    ---@param this LBStateMachine
-    lbstatemachine_onTick = function (this)
-        this._currentStateFunc = this.states[this.currentState]
-        if this._currentStateFunc then
-            this._nextState = this._currentStateFunc(this.ticks, this) or this.currentState -- nil preserves the current state
-            this.ticks = this._nextState == this.currentState and this.ticks + 1 or 0 -- reset ticks when the stateName changes
+    ---@param self LBStateMachine
+    lbstatemachine_onTick = function (self)
+        self._currentStateFunc = self.states[self.currentState]
+        if self._currentStateFunc then
+            self._nextState = self._currentStateFunc(self.ticks, self) or self.currentState -- nil preserves the current state
+            self.ticks = self._nextState == self.currentState and self.ticks + 1 or 0 -- reset ticks when the stateName changes
         else
-            this.currentState = 0
+            self.currentState = 0
         end
     end;
     ---@endsection
@@ -48,11 +48,11 @@ LifeBoatAPI.LBStateMachine = {
     ---@section lbstatemachine_setState
     ---Recommended to just do myStatemachine.states["MyStateName"] = function() ... end,
     ---But let this act as active code documentation
-    ---@param this LBStateMachine
+    ---@param self LBStateMachine
     ---@param stateName string name of the state
     ---@param callback fun(ticks:number, statemachine:LBStateMachine):string state callback that will be run while in the given state. Returns the name of the next state to move into or nil
-    lbstatemachine_addState = function (this, stateName, callback)
-        this.states[stateName] = callback
+    lbstatemachine_addState = function (self, stateName, callback)
+        self.states[stateName] = callback
     end;
     ---@endsection
 }

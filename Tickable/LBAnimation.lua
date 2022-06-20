@@ -22,12 +22,12 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field lastStep LBAnimationStep last animation step to have played
 LifeBoatAPI.LBAnimation = {
 
-    ---@param this LBAnimation
+    ---@param self LBAnimation
     ---@param startPlayingStraightAway boolean (optional) if True, will begin the animation immediately. Otherwise only starts when playFromStart is called
     ---@param steps LBAnimationStep[] (optional) list of steps to initialize with, otherwise use lbanimation_addStep
     ---@return LBAnimation
-    new = function (this, startPlayingStraightAway, steps)
-        return LifeBoatAPI.lb_copy(this, {
+    new = function (self, startPlayingStraightAway, steps)
+        return LifeBoatAPI.lb_copy(self, {
             steps = steps or {},
             index = startPlayingStraightAway and 1 or 0
         })
@@ -35,43 +35,43 @@ LifeBoatAPI.LBAnimation = {
 
     ---@section lbanimation_playFromStart
     ---Begin playing this animation from the start (restarts if currently playing)
-    ---@param this LBAnimation
-    lbanimation_playFromStart = function (this)
-        this.lastStep = nil
-        this.index = 1
+    ---@param self LBAnimation
+    lbanimation_playFromStart = function (self)
+        self.lastStep = nil
+        self.index = 1
     end;
     ---@endsection
 
     ---@section lbanimation_stop
     ---Stop playing the current animation#
     ---Once called, can only be restarted using playFromStart
-    ---@param this LBAnimation
-    lbanimation_stop = function (this)
-        this.index = 0
+    ---@param self LBAnimation
+    lbanimation_stop = function (self)
+        self.index = 0
     end;
     ---@endsection
 
     ---@section lbanimation_onTick
     ---Call during the onTick function for this animation to play
-    ---@param this LBAnimation
-    lbanimation_onTick = function (this)
-        this.lastStep = this.currentStep
-        this.currentStep = this.steps[this.index]
-        if this.currentStep then
-            this.currentStep.ticks = this.lastStep == this.currentStep and this.currentStep.ticks + 1 or 0 -- reset ticks to 0 if we've changed step
-            this.currentStep.callback(this.currentStep.ticks / this.currentStep.length, this.currentStep.ticks)
-            this.index = this.index + (this.currentStep.ticks > this.currentStep.length) and 1 or 0
+    ---@param self LBAnimation
+    lbanimation_onTick = function (self)
+        self.lastStep = self.currentStep
+        self.currentStep = self.steps[self.index]
+        if self.currentStep then
+            self.currentStep.ticks = self.lastStep == self.currentStep and self.currentStep.ticks + 1 or 0 -- reset ticks to 0 if we've changed step
+            self.currentStep.callback(self.currentStep.ticks / self.currentStep.length, self.currentStep.ticks)
+            self.index = self.index + (self.currentStep.ticks > self.currentStep.length) and 1 or 0
         end
     end;
     ---@endsection
 
     ---@section lbanimation_addStep
     ---Add a step to this animation
-    ---@param this LBAnimation
+    ---@param self LBAnimation
     ---@param length number number of ticks this will play for
     ---@param callback fun(t:number, ticks:number) animation function that takes a parameter t between 0->1, and a parameter ticks for the raw tick count
-    lbanimation_addStep = function (this, length, callback)
-        this.steps[#this.steps + 1] = {
+    lbanimation_addStep = function (self, length, callback)
+        self.steps[#self.steps + 1] = {
             length = length,
             callback = callback
         }

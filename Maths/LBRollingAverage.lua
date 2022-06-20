@@ -19,12 +19,11 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@field sum number total of the currently tracked values
 LifeBoatAPI.LBRollingAverage = {
 
-    ---@param this LBRollingAverage
+    ---@param cls LBRollingAverage
     ---@param maxValues number number of values this rolling average holds
     ---@return LBRollingAverage
-    new = function (this, maxValues)
-        return LifeBoatAPI.lb_copy(this,
-        {
+    new = function (cls, maxValues)
+        return LifeBoatAPI.lb_copy(cls, {
             values = {},
             maxValues = maxValues or math.maxinteger,
             index = 1
@@ -33,19 +32,19 @@ LifeBoatAPI.LBRollingAverage = {
 
     ---@section lbrollingaverage_addValue 
     ---Add a value to the rolling average
-    ---@param this LBRollingAverage
+    ---@param self LBRollingAverage
     ---@param value number value to add into the rolling average
     ---@return number average the current rolling average (also accessible via .average)
-    lbrollingaverage_addValue = function (this, value)
-        this.values[(this.index % this.maxValues) + 1] = value
-        this.index = this.index + 1
-        this.count = math.min(this.index, this.maxValues)
-        this.sum = 0
-        for _,v in ipairs(this.values) do
-            this.sum = this.sum + v
+    lbrollingaverage_addValue = function (self, value)
+        self.values[(self.index % self.maxValues) + 1] = value
+        self.index = self.index + 1
+        self.count = math.min(self.index, self.maxValues)
+        self.sum = 0
+        for _,v in ipairs(self.values) do
+            self.sum = self.sum + v
         end
-        this.average = this.sum / this.count
-        return this.average
+        self.average = self.sum / self.count
+        return self.average
     end;
     ---@endsection
 }

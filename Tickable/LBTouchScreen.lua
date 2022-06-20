@@ -9,8 +9,6 @@
 require("LifeBoatAPI.Utils.LBCopy")
 
 ---@class LBTouchScreen
----@field screenWidth number
----@field screenHeight number
 ---@field touchX number
 ---@field touchY number
 ---@field wasPressed boolean if the screen was being touched last tick
@@ -21,39 +19,108 @@ LifeBoatAPI.LBTouchScreen = {
     ---@section lbtouchscreen_onTick
     --- If using the button functionality, it is expected that you call this at the start of onTick
     --- Handles the touchscreen state for whether things are pressed or not
-    ---@param this LBTouchScreen
+    ---@param self LBTouchScreen
     ---@param compositeOffset number default composite for touches is 1,2,3,4; offset if composite has been re-routed
     ---@overload fun(self)
-    lbtouchscreen_onTick = function(this, compositeOffset)
+    lbtouchscreen_onTick = function(self, compositeOffset)
         compositeOffset = compositeOffset or 0
-        this.screenWidth    = input.getNumber(compositeOffset + 1)
-        this.screenHeight   = input.getNumber(compositeOffset + 2)
-        this.touchX         = input.getNumber(compositeOffset + 3)
-        this.touchY         = input.getNumber(compositeOffset + 4)
-        this.wasPressed     = this.isPressed or false
-        this.isPressed      = input.getBool(compositeOffset + 1)
+        self.touchX         = input.getNumber(compositeOffset + 3)
+        self.touchY         = input.getNumber(compositeOffset + 4)
+        self.wasPressed     = self.isPressed or false
+        self.isPressed      = input.getBool(compositeOffset + 1)
     end;
     ---@endsection
 
-    ---@section lbtouchscreen_newButton 1 LBTOUCHSCREEN_NEWBASICBUTTON
+
+   
+    ---@section lbtouchscreen_newButton 1 LBTOUCHSCREEN_NEWBUTTON
+    --- PLEASE BE AWARE, FANCY STYLED BUTTONS HAVE A RELATIVELY HIGH CHARACTER COST
     --- Create a new button that works with the LBTouchScreen
     --- Note, you must call LBTouchScreen.lbtouchscreen_ontick() at the start of onTick to make these buttons work
-    ---@param this LBTouchScreen
+    ---@param touchScreenRef LBTouchScreen
+    ---@param x number topleft x position of the button
+    ---@param y number topleft y position of the button
+    ---@param width number width of the button
+    ---@param height number height of the button
+    ---@param borderColor LBColorRGBA color for the border
+    ---@param fillColor LBColorRGBA color for the fill, when not clicked
+    ---@param fillPushColor LBColorRGBA color when pushed
+    ---@param textColor LBColorRGBA color for the text
+    ---@param textPushColor LBColorRGBA color for the text when clicked
+    ---@return LBTouchScreenButtonStyledClosure button button object to check for touches
+    lbtouchscreen_newButton = function (touchScreenRef, x, y, width, height,
+                                                        text,
+                                                        textColor,
+                                                        fillColor,
+                                                        borderColor,
+                                                        fillPushColor,
+                                                        textPushColor, _)
+        ---@class LBTouchScreenButtonStyledClosure
+        _ = {
+            ---@section lbbutton_isClicked
+            --- Checks if this button was clicked; triggers ONLY on the frame it's being clicked
+            lbbutton_isClicked = function()
+                return touchScreenRef.isPressed
+                        and not touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, x, y, width, height)
+            end;
+            ---@endsection
+
+            ---@section lbbutton_isHeld
+            --- Checks if this button is being pressed (i.e. HELD down), returns true on every frame it is being held
+            lbbutton_isHeld = function()
+                return touchScreenRef.isPressed
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, x, y, width, height)
+            end;
+            ---@endsection
+
+            ---@section lbbutton_isReleased
+            --- Checks for the user lifting the mouse button, like a "on mouse up" event. Note; this is actually how most buttons work on your computer.
+            lbbutton_isReleased = function()
+                return not touchScreenRef.isPressed
+                        and touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, x, y, width, height)
+            end;
+            ---@endsection
+
+            ---@section lbbutton_draw
+            --- Simple drawing function, can make life easier while prototyping things
+            ---@param self LBTouchScreenButtonStyledClosure
+            lbbutton_draw = function(self)
+                (self:lbclosurebutton_isHeld() and fillPushColor or fillColor):lbcolorrgba_setColor()
+                screen.drawRectF(x, y, width, height)
+
+                ;(self:lbclosurebutton_isHeld() and textPushColor or textColor):lbcolorrgba_setColor()
+                screen.drawTextBox(x+1, y+1, width-1, height-1, text, 0, 0)
+
+                ;(borderColor or textColor):lbcolorrgba_setColor()
+                screen.drawRect(x, y, width, height)
+            end;
+            ---@endsection
+        }
+        return _
+    end;
+    ---@endsection LBTOUCHSCREEN_NEWBUTTON
+
+
+    
+    ---@section lbtouchscreen_newButton_Minimalist 1 LBTOUCHSCREEN_NEWBUTTON_MINIMALISTIC
+    --- Create a new button that works with the LBTouchScreen
+    --- Note, you must call LBTouchScreen.lbtouchscreen_ontick() at the start of onTick to make these buttons work
+    ---@param touchScreenRef LBTouchScreen
     ---@param x         number topleft x position of the button
     ---@param y         number topleft y position of the button
     ---@param width     number width of the button
     ---@param height    number height of the button
     ---@param text      string text to display in the button
     ---@return LBTouchScreenButton button button object to check for touches
-    lbtouchscreen_newButton = function (this, x, y, width, height, text)
+    lbtouchscreen_newButton_Minimalist = function (touchScreenRef, x, y, width, height, text)
         ---@class LBTouchScreenButton
-        ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
         ---@field x number topLeft x position of the button
         ---@field y number topLeft y position of the button
         ---@field width number width of the button rect
         ---@field height number height of the button rect
         local button = {
-            touchScreenRef = this,
             x = x,
             y = y,
             width = width,
@@ -62,62 +129,52 @@ LifeBoatAPI.LBTouchScreen = {
 
             ---@section lbbutton_isClicked
             --- Checks if this button was clicked; triggers ONLY on the frame it's being clicked
-            ---@param this LBTouchScreenButton
-            lbbutton_isClicked = function(this)
-                return this.touchScreenRef.isPressed
-                        and not this.touchScreenRef.wasPressed 
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButton
+            lbbutton_isClicked = function(self)
+                return touchScreenRef.isPressed
+                        and not self.touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
             ---@section lbbutton_isHeld
             --- Checks if this button is being pressed (i.e. HELD down), returns true on every frame it is being held
-            ---@param this LBTouchScreenButton
-            lbbutton_isHeld = function(this)
-                return this.touchScreenRef.isPressed
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButton
+            lbbutton_isHeld = function(self)
+                return touchScreenRef.isPressed
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
             ---@section lbbutton_isReleased
             --- Checks for the user lifting the mouse button, like a "on mouse up" event. Note; this is actually how most buttons work on your computer.
-            ---@param this LBTouchScreenButton
-            lbbutton_isReleased = function(this)
-                return not this.touchScreenRef.isPressed
-                        and this.touchScreenRef.wasPressed 
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButton
+            lbbutton_isReleased = function(self)
+                return not touchScreenRef.isPressed
+                        and touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
             ---@section lbbutton_draw
             --- Simple drawing function, can make life easier while prototyping things
-            ---@param this LBTouchScreenButton
-            lbbutton_draw = function(this)
-                screen.drawRect(this.x, this.y, this.width, this.height)
-                screen.drawTextBox(this.x+1, this.y+1, this.width-1, this.height-1, this.text, 0, 0)
-            end;
-            ---@endsection
-
-            ---@section lbbutton_drawRect
-            ---@deprecated
-            --- DEPRECATED please use lbbutton_draw instead, and set text value in :new()
-            --- This function will be removed in a future version, please update your code.
-            ---@param this LBTouchScreenButton
-            lbbutton_drawRect = function(this, text)
-                screen.drawRect(this.x, this.y, this.width, this.height)
-                screen.drawTextBox(this.x+1, this.y+1, this.width-1, this.height-1, this.text or text, 0, 0)
+            ---@param self LBTouchScreenButton
+            lbbutton_draw = function(self)
+                screen.drawRect(self.x, self.y, self.width, self.height)
+                screen.drawTextBox(self.x+1, self.y+1, self.width-1, self.height-1, self.text, 0, 0)
             end;
             ---@endsection
         }
         return button
     end;
-    ---@endsection LBTOUCHSCREEN_NEWBASICBUTTON
+    ---@endsection LBTOUCHSCREEN_NEWBUTTON_MINIMALISTIC
 
-    ---@section lbtouchscreen_newStyledButton 1 LBTOUCHSCREEN_NEWSTYLEDBUTTON
+
+    ---@section lbtouchscreen_newButton_Customizable 1 LBTOUCHSCREEN_NEWBUTTON_CUSTOMIZABLE
     --- PLEASE BE AWARE, FANCY STYLED BUTTONS HAVE A RELATIVELY HIGH CHARACTER COST
     --- Create a new button that works with the LBTouchScreen
     --- Note, you must call LBTouchScreen.lbtouchscreen_ontick() at the start of onTick to make these buttons work
-    ---@param this LBTouchScreen
+    ---@param touchScreenRef LBTouchScreen
     ---@param x number topleft x position of the button
     ---@param y number topleft y position of the button
     ---@param width number width of the button
@@ -128,15 +185,14 @@ LifeBoatAPI.LBTouchScreen = {
     ---@param textColor LBColorRGBA color for the text
     ---@param textPushColor LBColorRGBA color for the text when clicked
     ---@return LBTouchScreenButtonStyled button button object to check for touches
-    lbtouchscreen_newStyledButton = function (this, x, y, width, height,
+    lbtouchscreen_newButton_Customizable = function (touchScreenRef, x, y, width, height,
                                                         text,
                                                         textColor,
                                                         fillColor,
                                                         borderColor,
                                                         fillPushColor,
-                                                        textPushColor)
+                                                        textPushColor, _)
         ---@class LBTouchScreenButtonStyled
-        ---@field touchScreenRef LBTouchScreen reference to the touchscreen, needed for tracking click state
         ---@field x number topLeft x position of the button
         ---@field y number topLeft y position of the button
         ---@field width number width of the button rect
@@ -147,8 +203,7 @@ LifeBoatAPI.LBTouchScreen = {
         ---@field fillPushColor LBColorRGBA height of the button rect
         ---@field textColor LBColorRGBA height of the button rect
         ---@field textPushColor LBColorRGBA height of the button rect
-        local button = {
-            touchScreenRef = this,
+        _ = {
             x = x,
             y = y,
             width = width,
@@ -160,52 +215,52 @@ LifeBoatAPI.LBTouchScreen = {
             textColor       = textColor,
             textPushColor   = textPushColor or textColor,
 
-            ---@section lbstyledbutton_isClicked
+            ---@section lbbutton_isClicked
             --- Checks if this button was clicked; triggers ONLY on the frame it's being clicked
-            ---@param this LBTouchScreenButtonStyled
-            lbstyledbutton_isClicked = function(this)
-                return this.touchScreenRef.isPressed
-                        and not this.touchScreenRef.wasPressed 
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButtonStyled
+            lbbutton_isClicked = function(self)
+                return touchScreenRef.isPressed
+                        and not touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
-            ---@section lbstyledbutton_isHeld
+            ---@section lbbutton_isHeld
             --- Checks if this button is being pressed (i.e. HELD down), returns true on every frame it is being held
-            ---@param this LBTouchScreenButtonStyled
-            lbstyledbutton_isHeld = function(this)
-                return this.touchScreenRef.isPressed
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButtonStyled
+            lbbutton_isHeld = function(self)
+                return touchScreenRef.isPressed
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
-            ---@section lbstyledbutton_isReleased
+            ---@section lbbutton_isReleased
             --- Checks for the user lifting the mouse button, like a "on mouse up" event. Note; this is actually how most buttons work on your computer.
-            ---@param this LBTouchScreenButtonStyled
-            lbstyledbutton_isReleased = function(this)
-                return not this.touchScreenRef.isPressed
-                        and this.touchScreenRef.wasPressed 
-                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(this.touchScreenRef.touchX, this.touchScreenRef.touchY, this.x, this.y, this.width, this.height)
+            ---@param self LBTouchScreenButtonStyled
+            lbbutton_isReleased = function(self)
+                return not touchScreenRef.isPressed
+                        and touchScreenRef.wasPressed 
+                        and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
 
-            ---@section lbstyledbutton_draw
+            ---@section lbbutton_draw
             --- Simple drawing function, can make life easier while prototyping things
-            ---@param this LBTouchScreenButtonStyled
-            lbstyledbutton_draw = function(this)
-                (this:lbstyledbutton_isHeld() and this.fillPushColor or this.fillColor):lbcolorrgba_setColor()
-                screen.drawRectF(this.x, this.y, this.width, this.height);
+            ---@param self LBTouchScreenButtonStyled
+            lbbutton_draw = function(self)
+                (self:lbstyledbutton_isHeld() and self.fillPushColor or self.fillColor):lbcolorrgba_setColor()
+                screen.drawRectF(self.x, self.y, self.width, self.height);
 
-                (this:lbstyledbutton_isHeld() and this.textPushColor or this.textColor):lbcolorrgba_setColor()
-                screen.drawTextBox(this.x+1, this.y+1, this.width-1, this.height-1, this.text, 0, 0)
+                (self:lbstyledbutton_isHeld() and self.textPushColor or self.textColor):lbcolorrgba_setColor()
+                screen.drawTextBox(self.x+1, self.y+1, self.width-1, self.height-1, self.text, 0, 0)
 
-                this.borderColor:lbcolorrgba_setColor()
-                screen.drawRect(this.x, this.y, this.width, this.height)
+                self.borderColor:lbcolorrgba_setColor()
+                screen.drawRect(self.x, self.y, self.width, self.height)
             end;
             ---@endsection
         }
-        return button
+        return _
     end;
-    ---@endsection LBTOUCHSCREEN_NEWSTYLEDBUTTON
+    ---@endsection LBTOUCHSCREEN_NEWBUTTON_CUSTOMIZABLE
 }
 ---@endsection LBTOUCHSCREENCLASS

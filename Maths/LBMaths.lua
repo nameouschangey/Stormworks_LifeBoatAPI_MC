@@ -89,7 +89,7 @@ LifeBoatAPI.LBMaths = {
     end;
     ---@endsection
 
-    ---@section lbmaths_isPointInRectangle
+    ---@section lbmaths_lerp
     ---@param startValue number number to lerp from
     ---@param endValue number number to lerp to
     ---@param t number lerp parameter, between 0->1

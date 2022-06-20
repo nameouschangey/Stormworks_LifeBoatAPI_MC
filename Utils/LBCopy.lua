@@ -33,6 +33,7 @@ end;
 ---@section lb_doNothing
 --- An empty function for any stubs, but also reducing the code needed for 
 ---   "if onHoverFunction ~= nil then onHoverFunction end -> (onHoverFunction or LBEmptyFunction)()"
+---@vararg any any
 LifeBoatAPI.lb_doNothing = function()end;
 ---@endsection
 

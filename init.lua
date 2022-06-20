@@ -13,9 +13,11 @@ require("LifeBoatAPI.Utils.LBTableUtils")
 require("LifeBoatAPI.Maths.LBMaths")
 require("LifeBoatAPI.Maths.LBVec")
 require("LifeBoatAPI.Maths.LBRollingAverage")
+require("LifeBoatAPI.Maths.LBRandom")
 
 require("LifeBoatAPI.Tickable.LBAnimation")
 require("LifeBoatAPI.Tickable.LBStateMachine")
+require("LifeBoatAPI.Tickable.LBStagedMachine")
 require("LifeBoatAPI.Tickable.LBTouchScreen")
 
 require("LifeBoatAPI.Drawing.LBColorSpace")
