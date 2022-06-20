@@ -87,10 +87,10 @@ LifeBoatAPI.LBTouchScreen = {
             --- Simple drawing function, can make life easier while prototyping things
             ---@param self LBTouchScreenButtonStyledClosure
             lbbutton_draw = function(self)
-                (self:lbclosurebutton_isHeld() and fillPushColor or fillColor):lbcolorrgba_setColor()
+                (self:lbbutton_isHeld() and fillPushColor or fillColor):lbcolorrgba_setColor()
                 screen.drawRectF(x, y, width, height)
 
-                ;(self:lbclosurebutton_isHeld() and textPushColor or textColor):lbcolorrgba_setColor()
+                ;(self:lbbutton_isHeld() and textPushColor or textColor):lbcolorrgba_setColor()
                 screen.drawTextBox(x+1, y+1, width-1, height-1, text, 0, 0)
 
                 ;(borderColor or textColor):lbcolorrgba_setColor()
@@ -132,7 +132,7 @@ LifeBoatAPI.LBTouchScreen = {
             ---@param self LBTouchScreenButton
             lbbutton_isClicked = function(self)
                 return touchScreenRef.isPressed
-                        and not self.touchScreenRef.wasPressed 
+                        and not touchScreenRef.wasPressed 
                         and LifeBoatAPI.LBMaths.lbmaths_isPointInRectangle(touchScreenRef.touchX, touchScreenRef.touchY, self.x, self.y, self.width, self.height)
             end;
             ---@endsection
@@ -248,10 +248,10 @@ LifeBoatAPI.LBTouchScreen = {
             --- Simple drawing function, can make life easier while prototyping things
             ---@param self LBTouchScreenButtonStyled
             lbbutton_draw = function(self)
-                (self:lbstyledbutton_isHeld() and self.fillPushColor or self.fillColor):lbcolorrgba_setColor()
+                (self:lbbutton_isHeld() and self.fillPushColor or self.fillColor):lbcolorrgba_setColor()
                 screen.drawRectF(self.x, self.y, self.width, self.height);
 
-                (self:lbstyledbutton_isHeld() and self.textPushColor or self.textColor):lbcolorrgba_setColor()
+                (self:lbbutton_isHeld() and self.textPushColor or self.textColor):lbcolorrgba_setColor()
                 screen.drawTextBox(self.x+1, self.y+1, self.width-1, self.height-1, self.text, 0, 0)
 
                 self.borderColor:lbcolorrgba_setColor()
