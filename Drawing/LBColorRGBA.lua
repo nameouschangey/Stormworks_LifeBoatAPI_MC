@@ -24,7 +24,7 @@ LifeBoatAPI.LBColorRGBA = {
     ---@endsection
 
 
-    ---@section lbcolorrgba_newCorrected
+    ---@section lbcolorrgba_newGammaCorrected
     --- Creates a new LBColorRGBA, correcting for the game's gamma factor
     --- Allows for colours that are closer to the expected HTML values
     ---@param self LBColorRGBA
@@ -50,7 +50,7 @@ LifeBoatAPI.LBColorRGBA = {
     end;
     ---@endsection
 
-    ---@section lbcolorrgba_newGammaCorrected
+    ---@section lbcolorrgba_newGammeCorrected_Customizable
     --- Creates a new LBColorRGBA, correcting for the game's gamma factor
     --- Allows for colours that are closer to the expected HTML values
     ---@param self LBColorRGBA
