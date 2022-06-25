@@ -23,6 +23,8 @@ require("LifeBoatAPI.Utils.LBCopy")
 ---@class LBStagedMachine
 ---@field current string name of the current state to run
 ---@field currentStage LBStage
+---@field stageTicks number
+---@field ticks number
 LifeBoatAPI.LBStagedMachine = {
     ---@param cls LBStagedMachine
     ---@return LBStagedMachine
@@ -51,6 +53,7 @@ LifeBoatAPI.LBStagedMachine = {
         if self.currentStage.lbstage_onInit then
             self.currentStage:lbstage_onInit(self)
         end
+        self:lbstagedmachine_onTick()
     end;
     ---@endsection
 
